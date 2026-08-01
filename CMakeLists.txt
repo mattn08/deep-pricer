@@ -10,4 +10,6 @@ endif()
 
 project ("deep-pricer")
 
+enable_testing()
+
 add_subdirectory(cpp)

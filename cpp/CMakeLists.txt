@@ -7,4 +7,6 @@ if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET deep-pricer PROPERTY CXX_STANDARD 20)
 endif()
 
-# TODO: Add tests and install targets if needed.
+add_subdirectory(tests)
+
+# TODO: Add install targets if needed.
