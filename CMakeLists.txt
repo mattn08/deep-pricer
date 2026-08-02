@@ -18,6 +18,11 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+# clang-tidy reads compile_commands.json rather than being run inline through
+# CMAKE_CXX_CLANG_TIDY, which would roughly double build time and would also
+# analyse GoogleTest's sources.
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 # Warnings are carried on an INTERFACE target rather than in CMAKE_CXX_FLAGS so
 # they apply to our targets only. A global -Werror would also be applied to
 # GoogleTest's own sources, where a warning we cannot fix would break the build.
