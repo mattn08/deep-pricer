@@ -37,12 +37,12 @@ double d_j(const int& j, const double& S, const double& K, const double& r,
 }
 
 
-double black_scholes_call(double S, double K, double T, double r, double b, double sigma) {
+double black_scholes_call(double S, double K, double T, double r, double, double sigma) {
 	return S * norm_cdf(d_j(1, S, K, r, sigma, T)) - K * exp(-r * T) *
 		norm_cdf(d_j(2, S, K, r, sigma, T));
 }
 
-double black_scholes_put(double S, double K, double T, double r, double b, double sigma) {
+double black_scholes_put(double S, double K, double T, double r, double, double sigma) {
 	return -S * norm_cdf(-d_j(1, S, K, r, sigma, T)) + K * exp(-r * T) *
 		norm_cdf(-d_j(2, S, K, r, sigma, T));
 }
