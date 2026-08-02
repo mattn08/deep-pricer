@@ -68,7 +68,7 @@
             "binaryDir": "${sourceDir}/out/build/${presetName}",
             "installDir": "${sourceDir}/out/install/${presetName}",
             "cacheVariables": {
-                "CMAKE_CXX_FLAGS": "-Wall -Wextra -Wpedantic -Werror"
+                "DEEPPRICER_WERROR": "ON"
             },
             "condition": {
                 "type": "equals",
@@ -102,7 +102,7 @@
                 "CMAKE_BUILD_TYPE": "Debug",
                 "CMAKE_C_COMPILER": "clang",
                 "CMAKE_CXX_COMPILER": "clang++",
-                "CMAKE_CXX_FLAGS": "-Wall -Wextra -Wpedantic -Werror -fsanitize=address,undefined -fno-omit-frame-pointer -fno-sanitize-recover=all -g",
+                "CMAKE_CXX_FLAGS": "-fsanitize=address,undefined -fno-omit-frame-pointer -fno-sanitize-recover=all -g",
                 "CMAKE_EXE_LINKER_FLAGS": "-fsanitize=address,undefined"
             }
         }

@@ -1,9 +1,35 @@
 # Tests for the C++ side.
 #
-# No test framework yet — the choice between GoogleTest / Catch2 / doctest is
-# still open, and CLAUDE.md asks for no new third-party dependency without
-# agreement. Until then these are plain CTest tests, which need nothing beyond
-# CMake itself. Swapping in a framework later does not change this wiring.
+# GoogleTest is pulled in with FetchContent and pinned to a release tag, so a
+# clean checkout and CI resolve the same source. SYSTEM keeps its headers out of
+# our warning surface.
+
+include(FetchContent)
+
+FetchContent_Declare(googletest
+  GIT_REPOSITORY https://github.com/google/googletest.git
+  GIT_TAG        v1.17.0
+  GIT_SHALLOW    TRUE
+  SYSTEM
+)
+
+# Match the MSVC runtime of the rest of the build; skip GMock and installation.
+set(gtest_force_shared_crt ON  CACHE BOOL "" FORCE)
+set(BUILD_GMOCK           OFF CACHE BOOL "" FORCE)
+set(INSTALL_GTEST         OFF CACHE BOOL "" FORCE)
+
+FetchContent_MakeAvailable(googletest)
+
+include(GoogleTest)
+
+add_executable(deep-pricer-tests "harness_test.cpp")
+target_link_libraries(deep-pricer-tests PRIVATE
+  GTest::gtest_main
+  deep_pricer_warnings
+)
+
+# Registers each TEST() as its own CTest entry, so a failure names itself.
+gtest_discover_tests(deep-pricer-tests)
 
 # End-to-end smoke: the executable runs, exits 0 and produces its expected output.
 add_test(NAME smoke_runs COMMAND deep-pricer)
