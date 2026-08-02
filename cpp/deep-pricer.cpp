@@ -5,8 +5,11 @@
 
 using namespace std;
 
+// Writing to cout can throw, and this placeholder main has nothing meaningful to
+// do about it. Replace the suppression with real handling once main does real work.
+// NOLINTNEXTLINE(bugprone-exception-escape)
 int main()
 {
-	cout << "Hello CMake." << endl;
+	cout << "Hello CMake." << '\n';
 	return 0;
 }

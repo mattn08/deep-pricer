@@ -44,3 +44,32 @@ jobs:
 
       - name: Test
         run: ctest --preset ${{ matrix.preset }}
+
+  lint:
+    name: lint / clang-tidy
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build clang clang-tidy
+
+      - name: Versions
+        run: clang-tidy --version
+
+      # Configure only: clang-tidy compiles each translation unit itself, and
+      # configuring is enough to produce compile_commands.json and to fetch the
+      # GoogleTest headers the test translation unit includes.
+      - name: Configure
+        run: cmake --preset linux-debug
+
+      # Driven off tracked sources under cpp/, so dependencies in the build tree
+      # are never analysed and new files are picked up without editing this job.
+      - name: Run clang-tidy
+        run: |
+          files=$(git ls-files 'cpp/*.cpp')
+          echo "$files"
+          clang-tidy -p out/build/linux-debug $files

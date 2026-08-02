@@ -1,0 +1,46 @@
+# clang-tidy configuration.
+#
+# Starts from nothing (-*) and enables only what earns its place. The
+# cppcoreguidelines-* family is deliberately absent: its bounds and
+# pointer-arithmetic checks fight the raw-buffer, structure-of-arrays style the
+# hot path calls for. Revisit once the engine exists and the cost is measurable
+# rather than hypothetical.
+
+Checks: >
+  -*,
+  bugprone-*,
+  performance-*,
+  portability-*,
+  readability-braces-around-statements,
+  readability-const-return-type,
+  readability-container-size-empty,
+  readability-delete-null-pointer,
+  readability-duplicate-include,
+  readability-misleading-indentation,
+  readability-misplaced-array-index,
+  readability-non-const-parameter,
+  readability-redundant-control-flow,
+  readability-redundant-declaration,
+  readability-redundant-preprocessor,
+  readability-redundant-smartptr-get,
+  readability-redundant-string-cstr,
+  readability-redundant-string-init,
+  readability-simplify-boolean-expr,
+  readability-static-definition-in-anonymous-namespace,
+  readability-string-compare,
+  readability-uniqueptr-delete-release,
+  -bugprone-easily-swappable-parameters
+
+# bugprone-easily-swappable-parameters is disabled above on purpose. A pricing
+# signature is a run of same-typed doubles (spot, strike, rate, vol, maturity);
+# the check fires on every one of them and the finding is never actionable.
+
+# Any enabled check failing is an error, so CI goes red rather than printing
+# advice nobody reads.
+WarningsAsErrors: '*'
+
+# Diagnose our own headers, not the dependencies pulled into the build tree.
+HeaderFilterRegex: '.*/cpp/.*'
+
+# Formatting is not enforced yet; no .clang-format exists to apply.
+FormatStyle: none
