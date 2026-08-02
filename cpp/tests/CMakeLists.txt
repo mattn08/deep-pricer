@@ -22,10 +22,24 @@ FetchContent_MakeAvailable(googletest)
 
 include(GoogleTest)
 
-add_executable(deep-pricer-tests "harness_test.cpp")
+add_executable(deep-pricer-tests
+  "harness_test.cpp"
+  "analytic_test.cpp"
+  "golden_test.cpp"
+  "golden.cpp"
+  "golden.h"
+  "tolerance.h"
+)
 target_link_libraries(deep-pricer-tests PRIVATE
   GTest::gtest_main
+  deep_pricer_analytic
   deep_pricer_warnings
+)
+
+# Reference tables are read from the source tree, not copied into the build tree,
+# so a regenerated table takes effect without reconfiguring.
+target_compile_definitions(deep-pricer-tests PRIVATE
+  DEEP_PRICER_TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/data"
 )
 
 # Registers each TEST() as its own CTest entry, so a failure names itself.

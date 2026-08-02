@@ -1,0 +1,6 @@
+# Fixture: a row with fewer fields than the header. The loader must throw rather
+# than fill the missing columns with zeros, which would silently corrupt a
+# reference value.
+
+source,label,S,K,T,r,b,sigma,expected,rel_tolerance,abs_tolerance
+some source,short row,1,2,3
