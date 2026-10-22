@@ -29,22 +29,25 @@ double norm_cdf(const double& x) {
 }
 
 // This calculates d_j, for j in {1 ,2}. This term appears in the closed
-// form solution for the European call or put price
-double d_j(const int& j, const double& S, const double& K, const double& r,
+// form solution for the European call or put price. The drift is the cost of
+// carry b, not the rate r: the forward is S*e^{bT}, and r only discounts.
+double d_j(const int& j, const double& S, const double& K, const double& b,
 	const double& v, const double& T) {
-	return (log(S / K) + (r + (pow(-1.0, j - 1)) * 0.5 * v * v) * T) / (v * (pow(T, 0.5)));
+	return (log(S / K) + (b + (pow(-1.0, j - 1)) * 0.5 * v * v) * T) / (v * (pow(T, 0.5)));
 
 }
 
 
-double black_scholes_call(double S, double K, double T, double r, double, double sigma) {
-	return S * norm_cdf(d_j(1, S, K, r, sigma, T)) - K * exp(-r * T) *
-		norm_cdf(d_j(2, S, K, r, sigma, T));
+// Generalised Black-Scholes. e^{(b-r)T} is 1 when b = r (no dividends), so this
+// reduces to the textbook formula; b = r - q gives Merton, b = 0 gives Black-76.
+double black_scholes_call(double S, double K, double T, double r, double b, double sigma) {
+	return S * exp((b - r) * T) * norm_cdf(d_j(1, S, K, b, sigma, T)) - K * exp(-r * T) *
+		norm_cdf(d_j(2, S, K, b, sigma, T));
 }
 
-double black_scholes_put(double S, double K, double T, double r, double, double sigma) {
-	return -S * norm_cdf(-d_j(1, S, K, r, sigma, T)) + K * exp(-r * T) *
-		norm_cdf(-d_j(2, S, K, r, sigma, T));
+double black_scholes_put(double S, double K, double T, double r, double b, double sigma) {
+	return -S * exp((b - r) * T) * norm_cdf(-d_j(1, S, K, b, sigma, T)) + K * exp(-r * T) *
+		norm_cdf(-d_j(2, S, K, b, sigma, T));
 }
 
 double up_and_out_call(double, double, double, double, double, double, double, double) {
