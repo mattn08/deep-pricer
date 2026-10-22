@@ -74,19 +74,25 @@ def grid() -> Iterator[Case]:
     maturities = [0.01, 0.25, 1.0, 5.0]
     vols = [0.05, 0.20, 0.60]
     rates = [0.0, 0.05]
+    # Cost of carry per rate: b = r (non-dividend stock), b = r - 0.03 (3%
+    # dividend yield) and b = 0 (future). The carry is what separates the
+    # forward from the discounting, so rows with b != r are the only ones that
+    # can catch an implementation that uses r for both.
+    dividend_yield = 0.03
     for S in spots:
         for T in maturities:
             for sigma in vols:
                 for r in rates:
-                    yield Case(
-                        label=f"S={S:g},T={T:g},sigma={sigma:g},r={r:g}",
-                        S=S,
-                        K=100.0,
-                        T=T,
-                        r=r,
-                        b=r,
-                        sigma=sigma,
-                    )
+                    for b in sorted({r, r - dividend_yield, 0.0}):
+                        yield Case(
+                            label=f"S={S:g},T={T:g},sigma={sigma:g},r={r:g},b={b:g}",
+                            S=S,
+                            K=100.0,
+                            T=T,
+                            r=r,
+                            b=b,
+                            sigma=sigma,
+                        )
 
 
 def write_table(path: Path, dps: int) -> int:
