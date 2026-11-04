@@ -67,7 +67,10 @@ TEST(AnalyticGolden, BlackScholesCall) {
   });
 }
 
-TEST(AnalyticGolden, UpAndOutCall) {
+// Disabled rather than left to skip: Visual Studio's Google Test adapter reports
+// every GTEST_SKIP as a crash, so the skip showed red in Test Explorer. Drop the
+// prefix when up_and_out_call.csv is committed.
+TEST(AnalyticGolden, DISABLED_UpAndOutCall) {
   check_table("up_and_out_call.csv", [](const GoldenRow& row) {
     return deep_pricer::up_and_out_call(row.S, row.K, row.H, row.rebate, row.T, row.r, row.b,
                                         row.sigma);
