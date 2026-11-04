@@ -32,11 +32,15 @@ std::string data_path(const std::string& name) {
   return std::string(DEEP_PRICER_TEST_DATA_DIR) + "/" + name;
 }
 
-// Runs a golden table through a pricing function. Skips loudly when the table is
-// not there yet rather than passing silently, which would be indistinguishable
-// from a table of zero rows that all agree.
-template <typename Price>
-void check_table(const std::string& file, Price price) {
+// Calls check(row) for every row of a table, with the row's label attached to any
+// failure. Skips loudly when the table is not there yet rather than passing
+// silently, which would be indistinguishable from a table of zero rows that all
+// agree.
+//
+// Shared by both kinds of test: golden tests compare against row.expected,
+// invariant tests read only the parameter columns.
+template <typename Check>
+void for_each_row(const std::string& file, Check check) {
   const std::string path = data_path(file);
   const std::vector<GoldenRow> rows = deep_pricer::testing::load_golden(path);
   if (rows.empty()) {
@@ -45,8 +49,16 @@ void check_table(const std::string& file, Price price) {
   }
   for (const GoldenRow& row : rows) {
     SCOPED_TRACE(row.label.empty() ? row.source : row.label);
-    EXPECT_TRUE(IsClose(price(row), row.expected, row.rel_tolerance, row.abs_tolerance, row.source));
+    check(row);
   }
+}
+
+// Runs a golden table through a pricing function.
+template <typename Price>
+void check_table(const std::string& file, Price price) {
+  for_each_row(file, [&price](const GoldenRow& row) {
+    EXPECT_TRUE(IsClose(price(row), row.expected, row.rel_tolerance, row.abs_tolerance, row.source));
+  });
 }
 
 TEST(AnalyticGolden, BlackScholesCall) {
@@ -66,8 +78,24 @@ TEST(AnalyticGolden, UpAndOutCall) {
 
 // C - P == S*e^{(b-r)T} - K*e^{-rT}. Catches discounting and carry errors that a
 // single transcribed price will not.
-TEST(AnalyticInvariant, DISABLED_PutCallParity) {
-  FAIL() << "implement black_scholes_call/put, then assert parity across a seeded grid";
+//
+// Inputs come from the Black-Scholes golden grid. Parity needs parameters, not
+// reference prices, so row.expected and the row's tolerances go unused: they
+// describe the call reference, not this identity. The grid's b != r rows
+// (dividend yield, futures) matter most here, because everywhere else
+// e^{(b-r)T} is 1 and a carry mistake cannot show.
+TEST(AnalyticInvariant, PutCallParity) {
+  for_each_row("black_scholes_call.csv", [](const GoldenRow& row) {
+    const double call =
+        deep_pricer::black_scholes_call(row.S, row.K, row.T, row.r, row.b, row.sigma);
+    const double put =
+        deep_pricer::black_scholes_put(row.S, row.K, row.T, row.r, row.b, row.sigma);
+
+    auto const left = call - put;
+	auto const right = row.S * std::exp((row.b - row.r) * row.T) - row.K * std::exp(-row.r * row.T);
+
+    EXPECT_TRUE(IsClose(left, right, row.rel_tolerance, row.abs_tolerance, row.source));
+  });
 }
 
 // Vol to zero leaves a deterministic discounted payoff. One of the degenerate
