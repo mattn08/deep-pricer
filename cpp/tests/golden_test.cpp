@@ -9,6 +9,7 @@
 
 #include <gtest/gtest.h>
 
+#include <limits>
 #include <string>
 #include <vector>
 
@@ -80,6 +81,25 @@ TEST(Tolerance, AbsoluteFloorCarriesNearZero) {
   // the deep out-of-the-money case.
   EXPECT_TRUE(IsClose(2e-16, 1e-16, 1e-12, 1e-14));
   EXPECT_FALSE(IsClose(2e-16, 1e-16, 1e-12, 1e-17));
+}
+
+TEST(Tolerance, ZeroExpectedIsJudgedOnTheFloorAlone) {
+  // A zero reference has no magnitude for a relative tolerance to scale with, so
+  // only the absolute floor, or an exact match, can pass it. Zero references are
+  // real: deep out-of-the-money golden rows, and parity rows where the forward
+  // equals the strike exactly.
+  EXPECT_TRUE(IsClose(0.0, 0.0, 1e-12, 0.0));
+  EXPECT_TRUE(IsClose(1e-15, 0.0, 1e-12, 1e-14));
+  EXPECT_FALSE(IsClose(1e-13, 0.0, 1e-12, 1e-14));
+  EXPECT_FALSE(IsClose(5.0, 0.0, 1e-12, 1e-14));
+}
+
+TEST(Tolerance, NaNNeverPasses) {
+  // A degenerate input (T = 0 at the money, say) can make a closed form return
+  // NaN. That must fail whatever the reference, zero included.
+  const double nan = std::numeric_limits<double>::quiet_NaN();
+  EXPECT_FALSE(IsClose(nan, 0.0, 1e-12, 1e-14));
+  EXPECT_FALSE(IsClose(nan, 1.0, 1e-12, 1e-14));
 }
 
 TEST(Tolerance, FailureMessageNamesTheSource) {

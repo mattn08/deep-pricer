@@ -58,8 +58,8 @@ propose benchmarks that would prove or disprove them. Suggest; don't substitute.
 
 ## Workflow
 
-- **Work on a branch, never on `main`.** Open a PR-shaped summary of what changed and
-  why; I review before merge.
+- **Work on a branch, never on `main`.** I review before merge. Keep the PR description
+  short, or leave it out: the commits should speak for themselves.
 - CI must be green before you consider a task done: build with sanitizers, tests, lint,
   and the end-to-end smoke.
 - Small, reviewable commits with real messages. No mega-commits mixing plumbing with
