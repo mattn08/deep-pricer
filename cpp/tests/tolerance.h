@@ -15,6 +15,7 @@
 #include <gtest/gtest.h>
 
 #include <cmath>
+#include <limits>
 #include <string>
 
 namespace deep_pricer::testing {
@@ -23,11 +24,18 @@ inline ::testing::AssertionResult IsClose(double actual, double expected, double
                                           double abs_tolerance, const std::string& source = {}) {
   const double abs_error = std::abs(actual - expected);
   const double scale = std::abs(expected);
-  const double rel_error = scale > 0.0 ? abs_error / scale : 0.0;
 
-  if (abs_error <= abs_tolerance || rel_error <= rel_tolerance) {
+  // The relative test is a product rather than a ratio, so a zero reference, which
+  // has no magnitude to be relative to, is judged on the absolute floor alone. Any
+  // comparison with NaN is false, so a NaN result can never pass.
+  if (abs_error <= abs_tolerance || abs_error <= rel_tolerance * scale) {
     return ::testing::AssertionSuccess();
   }
+
+  // Only needed for the message. Infinite against a zero reference, which is the
+  // honest answer to "how far off is this, relative to zero?".
+  const double rel_error =
+      scale > 0.0 ? abs_error / scale : std::numeric_limits<double>::infinity();
 
   ::testing::AssertionResult failure = ::testing::AssertionFailure();
   failure << "\n  actual   = " << actual << "\n  expected = " << expected
