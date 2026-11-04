@@ -4,6 +4,18 @@
 # third-party warnings out of our build (see cpp/tests/CMakeLists.txt).
 cmake_minimum_required (VERSION 3.25)
 
+# Refuse to configure into the source tree. An in-source build scatters generated
+# files through the repo and puts FetchContent's _deps/ at the root, where IDE
+# tooling picks up GoogleTest headers by a path that exists on one machine only.
+# This sits before project() so it fails before any compiler detection or download.
+if (CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
+  message(FATAL_ERROR
+    "In-source builds are not supported. Configure with a preset instead, e.g.\n"
+    "  cmake --preset x64-debug      (Windows)\n"
+    "  cmake --preset linux-debug    (Linux)\n"
+    "CMake has already written CMakeCache.txt and CMakeFiles/ here; delete them.")
+endif()
+
 # Enable Hot Reload for MSVC compilers if supported.
 if (POLICY CMP0141)
   cmake_policy(SET CMP0141 NEW)
