@@ -62,6 +62,23 @@ The autocallable is the opposite trade-off — closer to real equities-desk work
 closed form and many more parameters. It arrives in Phase 2, once the validation
 scaffolding exists to support it.
 
+### Black–Scholes end to end, Heston second
+
+The same argument, applied to the build order. Under Black–Scholes every layer has a
+closed-form reference — the Monte Carlo price, the pathwise Greeks, and the surrogate's
+prices and Greeks. Under Heston the barrier option has none, so a discrepancy could sit in
+the dynamics, the adjoints, the training or the export, with nothing to say which.
+
+So the whole pipeline — engine, Greeks, dataset, surrogate, service — is built and
+validated under Black–Scholes before Heston is written. A Black–Scholes surrogate is
+useless as a product, because the closed form already exists; that is what makes it a good
+test, since every number it returns can be checked against an exact value. Heston then
+arrives as a change of dynamics inside a stack whose other layers are already trusted.
+
+The alternative — finishing the engine under both models before starting the surrogate —
+reaches the dynamics that are hardest to validate before the tools for validating them
+exist.
+
 ### Ground truth at every step
 
 The governing rule of the build: no step is finished until its output is checked against
@@ -93,7 +110,7 @@ extremely cheap, and the differentials carry far more information per sample tha
 alone. The regression averages the noise away.
 
 An ablation at matched data budgets — differential loss versus value-only loss — quantifies
-what the differential term actually buys. <!-- link the figure here once Step 10 lands -->
+what the differential term actually buys. <!-- link the figure here once Step 9 lands -->
 
 ### An out-of-domain guard
 
@@ -189,18 +206,24 @@ agent should absorb.
 
 ## Project status
 
+**Black–Scholes, end to end** — closed-form ground truth at every numerical step.
+
 - [ ] **1** — Repo skeleton and CI
 - [ ] **2** — Closed-form Black–Scholes and barrier pricers
 - [ ] **3** — Monte Carlo engine, validated against closed form
 - [ ] **4** — Path generation, discrete barrier monitoring, Brownian-bridge correction
-- [ ] **5** — Sobol QMC, multithreading, benchmarks
-- [ ] **6** — Heston dynamics
-- [ ] **7** — pybind11 bindings and independent NumPy reference
-- [ ] **8** — Pathwise adjoint Greeks
-- [ ] **9** — Differential training dataset
-- [ ] **10** — Surrogate training and ablation
-- [ ] **11** — ONNX export, FastAPI service, out-of-domain guard
-- [ ] **12** — Agent harnesses, documentation, reproducibility pass
+- [ ] **5** — Multithreading, thread-count determinism, engine benchmarks
+- [ ] **6** — pybind11 bindings and independent NumPy reference
+- [ ] **7** — Pathwise adjoint Greeks
+- [ ] **8** — Differential training dataset
+- [ ] **9** — Surrogate training and ablation
+- [ ] **10** — ONNX export, FastAPI service, out-of-domain guard
+
+**Heston, then completion**
+
+- [ ] **11** — Heston dynamics, with the gates of Steps 3–10 re-run under it
+- [ ] **12** — Sobol QMC
+- [ ] **13** — Agent harnesses, documentation, reproducibility pass
 - [ ] **Phase 2** — Worst-of autocallable payoff plugin
 
 ## Licence and disclaimer
